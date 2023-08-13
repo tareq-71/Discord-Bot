@@ -1,0 +1,18 @@
+import discord
+from discord.ext import commands
+import discordBot
+
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='!', intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user.name}')
+    # Run your imported bot's setup function
+    await discordBot.setup(bot)
+
+def run_discord_bot():
+    TOKEN = 'MTA3ODA2MTE1OTUzOTgwMjIwMw.G6pJZN.UPToleYfPWITTklsklPHePEWqt06d-eJtvmNzY'
+    bot.run(TOKEN)
+
+run_discord_bot()
