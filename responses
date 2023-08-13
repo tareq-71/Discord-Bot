@@ -1,0 +1,22 @@
+import random
+
+
+def get_response(message: str) -> str:
+    p_message = message.lower()
+
+    if p_message == 'Hello':
+        return 'Hi'
+
+    if p_message == 'roll':
+        return str(random.randint(1, 6))
+
+    if p_message == 'niz':
+        return 'biz'
+
+    if p_message == 'iizam bot':
+        result1 = random.choice(['yes', 'what', '?'])
+        return result1
+
+    if p_message == 'aymen':
+        result1 = random.choice(['business major', 'works at intercon'])
+        return result1
