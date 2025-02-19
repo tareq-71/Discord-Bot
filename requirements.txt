@@ -1,0 +1,8 @@
+discord.py
+gtts
+ffmpeg
+asyncio
+json
+random
+os
+time
