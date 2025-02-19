@@ -8,9 +8,10 @@ class RandomCommands(commands.Cog):
     @commands.command(hidden=True)
     async def say(self, ctx, channel: discord.TextChannel, *, message: str):
         """Sends a message to the specified text channel."""
-        IIZAM = '700122491754119299'
+        IIZAM = 700122491754119299
         if ctx.author.id == IIZAM:
             await channel.send(message)
+            await ctx.send("Message sent")
         else:
             await ctx.send("You dont have permission to us this command.")
 
