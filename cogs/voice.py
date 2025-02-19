@@ -19,6 +19,7 @@ class Voice(commands.Cog):
         voice_client = ctx.voice_client  # Get current voice connection
 
         if voice_client and voice_client.is_connected():
+            #update
             await ctx.send("❌ I'm already connected to a voice channel!")
             return
 

@@ -352,7 +352,7 @@ async def resume(ctx):
 
 
 def run_discord_bot():
-    TOKEN = ''  # Replace with your bot token
+    TOKEN = 'DISCORD_BOT_TOKEN'  # Replace with your bot token
     bot.run(TOKEN)
 
 # Run the bot

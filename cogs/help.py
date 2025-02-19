@@ -14,8 +14,7 @@ class Help(commands.Cog):
             # Get details on a specific command
             command = self.bot.get_command(command_name)
             if command and not command.hidden:  # ✅ Exclude hidden commands
-                # 🎨 Different color for individual command details
-                embed = discord.Embed(title=f"📌 Command: `{command.name}`", color=discord.Color.orange())
+                embed = discord.Embed(title=f"📌 Command: `{command.name}`", color=discord.Color.blue())
                 embed.add_field(name="Description", value=command.help or "No description available.", inline=False)
                 embed.add_field(name="Usage", value=f"!{command.name}", inline=False)
                 await ctx.send(embed=embed)
@@ -24,21 +23,15 @@ class Help(commands.Cog):
             return
 
         # ✅ Display only non-hidden commands grouped by cogs
-        embed = discord.Embed(title="📜 Available Commands", color=discord.Color.blue())  # ✅ Main Help Color
+        embed = discord.Embed(title="📜 Available Commands", color=discord.Color.blurple())
         embed.set_footer(text="Use !help <command> to get more details.")
 
         for cog_name, cog in self.bot.cogs.items():
             commands_list = [cmd for cmd in cog.get_commands() if not cmd.hidden]  # ✅ Exclude hidden commands
 
             if commands_list:
-                # 🎨 Different color per category (optional)
-                category_color = discord.Color.green() if "Mod" in cog_name else discord.Color.teal()
-                
-                embed.add_field(
-                    name=f"{cog_name} Commands:",
-                    value="\n".join([f"**!{cmd.name}** - {cmd.help}" for cmd in commands_list if cmd.help]),
-                    inline=False
-                )
+                command_info = "\n".join([f"**!{cmd.name}** - {cmd.help}" for cmd in commands_list if cmd.help])
+                embed.add_field(name=f"{cog_name} Commands:", value=command_info, inline=False)
 
         await ctx.send(embed=embed)
 
