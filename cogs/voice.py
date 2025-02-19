@@ -11,30 +11,30 @@ class Voice(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True)
-        async def join(self, ctx, *, channel_name: str = None):
-            """
-            Joins the specified voice channel by name, or the user's current channel if no name is provided.
-            """
-            guild = ctx.guild
-            voice_client = ctx.voice_client  # Get current voice connection
+    async def join(self, ctx, *, channel_name: str = None):
+        """
+        Joins the specified voice channel by name, or the user's current channel if no name is provided.
+        """
+        guild = ctx.guild
+        voice_client = ctx.voice_client  # Get current voice connection
 
-            if voice_client and voice_client.is_connected():
-                await ctx.send("❌ I'm already connected to a voice channel!")
-                return
+        if voice_client and voice_client.is_connected():
+            await ctx.send("❌ I'm already connected to a voice channel!")
+            return
 
-            if channel_name:
-                channel = discord.utils.get(guild.voice_channels, name=channel_name)
-                if channel:
-                    await channel.connect()
-                    await ctx.send(f"✅ Joined voice channel: **{channel_name}**")
-                else:
-                    await ctx.send(f"❌ Voice channel **'{channel_name}'** not found.")
-            elif ctx.author.voice:
-                channel = ctx.author.voice.channel
+        if channel_name:
+            channel = discord.utils.get(guild.voice_channels, name=channel_name)
+            if channel:
                 await channel.connect()
-                await ctx.send(f"✅ Joined **your** voice channel: **{channel.name}**")
+                await ctx.send(f"✅ Joined voice channel: **{channel_name}**")
             else:
-                await ctx.send("❌ You need to specify a channel name or be in a voice channel yours")
+                await ctx.send(f"❌ Voice channel **'{channel_name}'** not found.")
+        elif ctx.author.voice:
+            channel = ctx.author.voice.channel
+            await channel.connect()
+            await ctx.send(f"✅ Joined **your** voice channel: **{channel.name}**")
+        else:
+            await ctx.send("You need to specify a channel name or be in a voice channel yours")
 
 
     @commands.command(hidden=True)
