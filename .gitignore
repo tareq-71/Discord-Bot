@@ -14,6 +14,3 @@ token.txt
 *.zip
 *.tar
 node_modules/
-
-#ignore bot token
-.env
