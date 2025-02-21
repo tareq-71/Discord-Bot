@@ -415,32 +415,5 @@ class Games(commands.Cog):
             await ctx.send("You took too long to respond. The game has ended.")
             raise asyncio.CancelledError
 
-    @commands.command()
-    async def teams(self, ctx, channel_name: str):
-        """Randomly divide members of a voice channel into two teams."""
-        guild = ctx.guild
-        channel = discord.utils.get(guild.voice_channels, name=channel_name)
-
-        if not channel:
-            await ctx.send(f"Voice channel '{channel_name}' not found.")
-            return
-
-        AMAR = 294453266274582534
-        AMRIT = 987456591869673584
-        IIZAM_BOT = 1078061159539802203
-        YOUSEF = 772294958086488104
-        members = [m for m in channel.members if m.id not in {IIZAM_BOT, AMRIT}]
-
-        if not members:
-            await ctx.send(f"No eligible members in '{channel_name}'.")
-            return
-
-        random.shuffle(members)
-        mid = len(members) // 2
-        team1 = ", ".join([m.name for m in members[:mid]])
-        team2 = ", ".join([m.name for m in members[mid:]])
-
-        await ctx.send(f"**Team 1:** {team1}\n**Team 2:** {team2}")
-
 async def setup(bot):
     await bot.add_cog(Games(bot))
