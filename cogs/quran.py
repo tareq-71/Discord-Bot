@@ -120,6 +120,8 @@ QURAN_LIBRARY = {
     "nas": "Quran_surahs/114.mp3"      # An-Nas
 }
 
+# Yasser Al-Dosari
+# Hazza Al Balushi
 # Map short names to full names
 SURAH_NAMES = {
     "fatiha": "Al-Fatiha",

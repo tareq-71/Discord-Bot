@@ -1,0 +1,7 @@
+Error when you accenditally push to git when your token is in your script:
+    git log -p | Select-String "YOUR_OLD_TOKEN_HERE"
+    git filter-branch --force --index-filter "git rm --cached --ignore-unmatch bot.py" --prune-empty --tag-name-filter cat -- --all
+    git push origin --force --all
+
+
+
