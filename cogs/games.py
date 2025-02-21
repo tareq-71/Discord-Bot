@@ -203,7 +203,7 @@ class Games(commands.Cog):
 
         # ✅ Player's turn
         while player_score < 21:
-            await ctx.send("Would you like to `Hit` or `Stand`?")
+            await ctx.send("Would you like to Hit or Stand?")
 
             def check(m):
                 return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() in ["hit", "stand"]
@@ -267,9 +267,11 @@ class Games(commands.Cog):
                 await ctx.send("Error: SIUBucks system unavailable.")
                 return
 
-            balance = siubucks_cog.members_SIUBucks.get(user_id, 0)
+            balance = siubucks_cog.members_SIUBucks.get(str(user_id))
             if balance == 0:
-                balance += 1
+                await self.award_SIUBucks(ctx.author, 1)
+                balance = siubucks_cog.members_SIUBucks.get(str(user_id))
+
             # ✅ Keep asking for a valid bet amount
             while True:
                 await ctx.send(f"How much would you like to bet? Your balance is {balance} SIUBucks.")
