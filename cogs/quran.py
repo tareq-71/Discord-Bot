@@ -244,26 +244,56 @@ class Quran(commands.Cog):
         self.bot = bot
         self.current_surah = None
 
-    async def play_audio(self, ctx, file_path):
-        """Plays an audio file in a connected voice channel."""
-        if ctx.voice_client:
-            if ctx.voice_client.is_playing():
-                ctx.voice_client.stop()
+    async def play_audio(self, ctx, surah_name, manual_call=True):
+        """Stops current playback (if any) and plays the requested Surah, then auto-plays the next one."""
+        file_path = QURAN_LIBRARY.get(surah_name)
 
-            ctx.voice_client.play(
-                discord.FFmpegPCMAudio(file_path),
-                after=lambda e: self.set_current_surah(None)
-            )
-        else:
-            await ctx.send("I am not in a voice channel. Use `!join` first.")
+        if not file_path or not os.path.exists(file_path):
+            if manual_call:  # Only send a message if it was a manual request
+                await ctx.send(f"Audio file not found for {SURAH_NAMES.get(surah_name, surah_name)}.")
+            return
 
-    def set_current_surah(self, surah):
-        """Sets the currently playing Surah."""
-        self.current_surah = surah
+        # Stop current playback before updating self.current_surah
+        if ctx.voice_client and ctx.voice_client.is_playing():
+            self.manual_override = True  # Indicate that playback was manually changed
+            ctx.voice_client.stop()
+
+        # Set current_surah **before** playing to prevent mismatched messages
+        self.current_surah = surah_name  
+
+        # Send "Now playing" message only if it's a manual call
+        if manual_call:
+            await ctx.send(f"Now playing: {SURAH_NAMES[surah_name]}")
+
+        def after_playback(error):
+            if not self.manual_override:  # Only auto-play next if not manually overridden
+                self.bot.loop.create_task(self.auto_next(ctx))
+            else:
+                self.manual_override = False  # Reset flag after manual playback switch
+
+        ctx.voice_client.play(
+            discord.FFmpegPCMAudio(file_path),
+            after=after_playback
+        )
+
+    async def auto_next(self, ctx):
+        """Automatically plays the next Surah when the current one ends, without sending a message."""
+        next_surah = self.get_next_surah(self.current_surah)
+        if next_surah:
+            await self.play_audio(ctx, next_surah, manual_call=False)  # Auto transition, no message
+
+    def get_next_surah(self, current_surah):
+        """Finds the next Surah in the order from SURAH_NAMES, looping back at the end."""
+        surah_list = list(SURAH_NAMES.keys())  # Get a list of Surahs in order
+        if current_surah in surah_list:
+            index = surah_list.index(current_surah)
+            next_index = (index + 1) % len(surah_list)  # Loops back to 0 when reaching the end
+            return surah_list[next_index]
+        return None
 
     @commands.command()
     async def surah(self, ctx, surah_name: str):
-        """Plays the specified Surah in the voice channel."""
+        """Plays the specified Surah and stops any currently playing one."""
         surah_name = surah_name.lower()
 
         if surah_name not in QURAN_LIBRARY:
@@ -275,14 +305,7 @@ class Quran(commands.Cog):
             await ctx.send("I am not in a voice channel. Use `!join` first.")
             return
 
-        file_path = QURAN_LIBRARY[surah_name]
-
-        if os.path.exists(file_path):
-            self.set_current_surah(surah_name)
-            await ctx.send(f"Now playing: {SURAH_NAMES[surah_name]}")
-            await self.play_audio(ctx, file_path)
-        else:
-            await ctx.send(f"Audio file not found for {SURAH_NAMES[surah_name]}.")
+        await self.play_audio(ctx, surah_name, manual_call=True)  # Manual play, sends message
 
     @commands.command()
     async def currentsurah(self, ctx):
@@ -291,12 +314,6 @@ class Quran(commands.Cog):
             await ctx.send(f"Currently playing: {SURAH_NAMES[self.current_surah]}")
         else:
             await ctx.send("No Surah is currently playing.")
-
-    @commands.command()
-    async def surahs(self, ctx):
-        """Lists all available Surahs."""
-        surah_list = "\n".join(f"- {value}" for value in SURAH_NAMES.values())
-        await ctx.send(f"Available Surahs:\n```{surah_list}```")
 
     @commands.command()
     async def pause(self, ctx):
@@ -315,6 +332,28 @@ class Quran(commands.Cog):
             await ctx.send("Playback resumed.")
         else:
             await ctx.send("No Surah is currently paused.")
+
+    @commands.command()
+    async def next(self, ctx):
+        """Skips the current Surah and plays the next one in order."""
+        if ctx.voice_client and ctx.voice_client.is_playing():
+            self.manual_override = True  # Prevent auto_next() from interfering
+            ctx.voice_client.stop()
+            next_surah = self.get_next_surah(self.current_surah)
+            if next_surah:
+                await ctx.send("Surah skipped.")
+                await self.play_audio(ctx, next_surah, manual_call=True)  # Make skip behave like !surah
+            else:
+                await ctx.send("No next Surah found.")  # Should never happen due to looping
+        else:
+            await ctx.send("No Surah is currently playing.")
+
+    @commands.command()
+    async def surahs(self, ctx):
+        """Lists all available Surahs."""
+        surah_list = "\n".join(f"- {value}" for value in SURAH_NAMES.values())
+        await ctx.send(f"Available Surahs:\n```{surah_list}```")
+
 
 async def setup(bot):
     await bot.add_cog(Quran(bot))

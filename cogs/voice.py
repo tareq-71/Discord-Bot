@@ -12,9 +12,7 @@ class Voice(commands.Cog):
 
     @commands.command(hidden=True)
     async def join(self, ctx, *, channel_name: str = None):
-        """
-        Joins the specified voice channel by name, or the user's current channel if no name is provided.
-        """
+        """<"vc_name"> joins vc_name."""
         guild = ctx.guild
         voice_client = ctx.voice_client  # Get current voice connection
 
@@ -49,7 +47,7 @@ class Voice(commands.Cog):
 
     @commands.command(hidden=True)
     async def sayV(self, ctx, *, text: str):
-        """Converts text to speech and plays it in the voice channel."""
+        """<"text"> text to speech while bot is in vc."""
         if ctx.voice_client:
             # Generate TTS audio file
             tts = gTTS(text=text, lang='en')
@@ -65,7 +63,7 @@ class Voice(commands.Cog):
 
     @commands.command(hidden=True)
     async def set_volume(self, ctx, volume: float):
-        """Sets playback volume (e.g., 0.5 for 50%, 1.0 for 100%, 2.0 for 200%)."""
+        """<"volume_level"> Sets playback volume (e.g., 0.5 for 50%, 1.0 for 100%, 2.0 for 200%)."""
         global DEFAULT_VOLUME
         if 0.0 < volume <= 2.0:  # Ensure valid range
             DEFAULT_VOLUME = volume
