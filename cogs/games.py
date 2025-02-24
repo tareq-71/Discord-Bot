@@ -268,7 +268,7 @@ class Games(commands.Cog):
                 return
 
             balance = siubucks_cog.members_SIUBucks.get(str(user_id))
-            if balance == 0:
+            if balance == 0 or balance is None:
                 await self.award_SIUBucks(ctx.author, 1)
                 balance = siubucks_cog.members_SIUBucks.get(str(user_id))
 

@@ -5,7 +5,7 @@ __pycache__/
 
 # Ignore config files (security reasons)
 .env
-config.json
+siubucks.json
 token.txt
 
 # Ignore large files
@@ -14,3 +14,4 @@ token.txt
 *.zip
 *.tar
 node_modules/
+
