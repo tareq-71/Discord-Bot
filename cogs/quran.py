@@ -1,128 +1,135 @@
 import discord
 import os
+import asyncio
 from discord.ext import commands
 
-# Map user-friendly surah names to file paths
-QURAN_LIBRARY = {
-    "fatiha": "Quran_surahs/001.mp3",   # Al-Fatiha
-    "baqara": "Quran_surahs/002.mp3",  # Al-Baqara
-    "imran": "Quran_surahs/003.mp3",   # Al-Imran
-    "nisa": "Quran_surahs/004.mp3",    # An-Nisa
-    "maidah": "Quran_surahs/005.mp3",  # Al-Ma'idah
-    "anam": "Quran_surahs/006.mp3",    # Al-An'am
-    "araf": "Quran_surahs/007.mp3",    # Al-A'raf
-    "anfal": "Quran_surahs/008.mp3",   # Al-Anfal
-    "tawba": "Quran_surahs/009.mp3",   # At-Tawba
-    "yunus": "Quran_surahs/010.mp3",   # Yunus
-    "hud": "Quran_surahs/011.mp3",     # Hud
-    "yusuf": "Quran_surahs/012.mp3",   # Yusuf
-    "rad": "Quran_surahs/013.mp3",     # Ar-Ra'd
-    "ibrahim": "Quran_surahs/014.mp3", # Ibrahim
-    "hijr": "Quran_surahs/015.mp3",    # Al-Hijr
-    "nahl": "Quran_surahs/016.mp3",    # An-Nahl
-    "isra": "Quran_surahs/017.mp3",    # Al-Isra
-    "kahf": "Quran_surahs/018.mp3",    # Al-Kahf
-    "maryam": "Quran_surahs/019.mp3",  # Maryam
-    "taha": "Quran_surahs/020.mp3",    # Ta-Ha
-    "anbiya": "Quran_surahs/021.mp3",  # Al-Anbiya
-    "hajj": "Quran_surahs/022.mp3",    # Al-Hajj
-    "muminun": "Quran_surahs/023.mp3", # Al-Mu'minun
-    "nur": "Quran_surahs/024.mp3",     # An-Nur
-    "furqan": "Quran_surahs/025.mp3",  # Al-Furqan
-    "shuara": "Quran_surahs/026.mp3",  # Ash-Shu'ara
-    "naml": "Quran_surahs/027.mp3",    # An-Naml
-    "qasas": "Quran_surahs/028.mp3",   # Al-Qasas
-    "ankabut": "Quran_surahs/029.mp3", # Al-Ankabut
-    "rum": "Quran_surahs/030.mp3",     # Ar-Rum
-    "luqman": "Quran_surahs/031.mp3",  # Luqman
-    "sajda": "Quran_surahs/032.mp3",   # As-Sajda
-    "ahzab": "Quran_surahs/033.mp3",   # Al-Ahzab
-    "saba": "Quran_surahs/034.mp3",    # Saba
-    "fatir": "Quran_surahs/035.mp3",   # Fatir
-    "yaseen": "Quran_surahs/036.mp3",  # Ya-Sin
-    "saffat": "Quran_surahs/037.mp3",  # As-Saffat
-    "sad": "Quran_surahs/038.mp3",     # Sad
-    "zumar": "Quran_surahs/039.mp3",   # Az-Zumar
-    "ghafir": "Quran_surahs/040.mp3",  # Ghafir
-    "fussilat": "Quran_surahs/041.mp3",# Fussilat
-    "shura": "Quran_surahs/042.mp3",   # Ash-Shura
-    "zukhruf": "Quran_surahs/043.mp3", # Az-Zukhruf
-    "dukhan": "Quran_surahs/044.mp3",  # Ad-Dukhan
-    "jathiya": "Quran_surahs/045.mp3", # Al-Jathiya
-    "ahqaf": "Quran_surahs/046.mp3",   # Al-Ahqaf
-    "muhammad": "Quran_surahs/047.mp3",# Muhammad
-    "fath": "Quran_surahs/048.mp3",    # Al-Fath
-    "hujurat": "Quran_surahs/049.mp3", # Al-Hujurat
-    "qaf": "Quran_surahs/050.mp3",     # Qaf
-    "dhariyat": "Quran_surahs/051.mp3",# Adh-Dhariyat
-    "tur": "Quran_surahs/052.mp3",     # At-Tur
-    "najm": "Quran_surahs/053.mp3",    # An-Najm
-    "qamar": "Quran_surahs/054.mp3",   # Al-Qamar
-    "rahman": "Quran_surahs/055.mp3",  # Ar-Rahman
-    "waqia": "Quran_surahs/056.mp3",   # Al-Waqia
-    "hadid": "Quran_surahs/057.mp3",   # Al-Hadid
-    "mujadila": "Quran_surahs/058.mp3",# Al-Mujadila
-    "hashr": "Quran_surahs/059.mp3",   # Al-Hashr
-    "mumtahina": "Quran_surahs/060.mp3",# Al-Mumtahina
-    "saff": "Quran_surahs/061.mp3",    # As-Saff
-    "jumuah": "Quran_surahs/062.mp3",  # Al-Jumuah
-    "munafiqun": "Quran_surahs/063.mp3",# Al-Munafiqun
-    "taghabun": "Quran_surahs/064.mp3",# At-Taghabun
-    "talaq": "Quran_surahs/065.mp3",   # At-Talaq
-    "tahrim": "Quran_surahs/066.mp3",  # At-Tahrim
-    "mulk": "Quran_surahs/067.mp3",    # Al-Mulk
-    "qalam": "Quran_surahs/068.mp3",   # Al-Qalam
-    "haqqa": "Quran_surahs/069.mp3",   # Al-Haqqa
-    "maarij": "Quran_surahs/070.mp3",  # Al-Maarij
-    "nuh": "Quran_surahs/071.mp3",     # Nuh
-    "jinn": "Quran_surahs/072.mp3",    # Al-Jinn
-    "muzammil": "Quran_surahs/073.mp3",# Al-Muzammil
-    "mudathir": "Quran_surahs/074.mp3",# Al-Mudathir
-    "qiyama": "Quran_surahs/075.mp3",  # Al-Qiyama
-    "insan": "Quran_surahs/076.mp3",   # Al-Insan
-    "mursalat": "Quran_surahs/077.mp3",# Al-Mursalat
-    "naba": "Quran_surahs/078.mp3",    # An-Naba
-    "naziat": "Quran_surahs/079.mp3",  # An-Naziat
-    "abasa": "Quran_surahs/080.mp3",   # Abasa
-    "takwir": "Quran_surahs/081.mp3",  # At-Takwir
-    "infitar": "Quran_surahs/082.mp3", # Al-Infitar
-    "mutaffifin": "Quran_surahs/083.mp3",# Al-Mutaffifin
-    "inshiqaq": "Quran_surahs/084.mp3",# Al-Inshiqaq
-    "burooj": "Quran_surahs/085.mp3",  # Al-Burooj
-    "tariq": "Quran_surahs/086.mp3",   # At-Tariq
-    "ala": "Quran_surahs/087.mp3",     # Al-Ala
-    "ghashiya": "Quran_surahs/088.mp3",# Al-Ghashiya
-    "fajr": "Quran_surahs/089.mp3",    # Al-Fajr
-    "balad": "Quran_surahs/090.mp3",   # Al-Balad
-    "shams": "Quran_surahs/091.mp3",   # Ash-Shams
-    "layl": "Quran_surahs/092.mp3",    # Al-Layl
-    "duha": "Quran_surahs/093.mp3",    # Ad-Duha
-    "sharh": "Quran_surahs/094.mp3",   # Al-Inshirah (Ash-Sharh)
-    "tin": "Quran_surahs/095.mp3",     # At-Tin
-    "alaq": "Quran_surahs/096.mp3",    # Al-Alaq
-    "qadr": "Quran_surahs/097.mp3",    # Al-Qadr
-    "bayyina": "Quran_surahs/098.mp3", # Al-Bayyina
-    "zilzal": "Quran_surahs/099.mp3",  # Az-Zalzala
-    "adiyat": "Quran_surahs/100.mp3",  # Al-Adiyat
-    "qariah": "Quran_surahs/101.mp3",  # Al-Qaria
-    "takathur": "Quran_surahs/102.mp3",# At-Takathur
-    "asr": "Quran_surahs/103.mp3",     # Al-Asr
-    "humazah": "Quran_surahs/104.mp3", # Al-Humazah
-    "fil": "Quran_surahs/105.mp3",     # Al-Fil
-    "quraish": "Quran_surahs/106.mp3", # Quraysh
-    "maun": "Quran_surahs/107.mp3",    # Al-Ma'un
-    "kawthar": "Quran_surahs/108.mp3", # Al-Kawthar
-    "kafirun": "Quran_surahs/109.mp3", # Al-Kafirun
-    "nasr": "Quran_surahs/110.mp3",    # An-Nasr
-    "masad": "Quran_surahs/111.mp3",   # Al-Masad
-    "ikhlas": "Quran_surahs/112.mp3",  # Al-Ikhlas
-    "falaq": "Quran_surahs/113.mp3",   # Al-Falaq
-    "nas": "Quran_surahs/114.mp3"      # An-Nas
+RECITERS = {
+    "dosari": "Yasser Al-Dosari",
+    "afasy": "Mishari Rashid Al-Afasy",
+    "hazza": "Hazza Al-Balushi",
+    "idrees": "Idrees Abkar"
 }
 
-# Yasser Al-Dosari
-# Hazza Al Balushi
-# Map short names to full names
+DEFAULT_RECITER = "dosari"
+
+# Mapping Surah Names to Numbers
+SURAH_TO_NUMBER = {
+    "fatiha": "001",
+    "baqara": "002",
+    "imran": "003",
+    "nisa": "004",
+    "maidah": "005",
+    "anam": "006",
+    "araf": "007",
+    "anfal": "008",
+    "tawba": "009",
+    "yunus": "010",
+    "hud": "011",
+    "yusuf": "012",
+    "rad": "013",
+    "ibrahim": "014",
+    "hijr": "015",
+    "nahl": "016",
+    "isra": "017",
+    "kahf": "018",
+    "maryam": "019",
+    "taha": "020",
+    "anbiya": "021",
+    "hajj": "022",
+    "muminun": "023",
+    "nur": "024",
+    "furqan": "025",
+    "shuara": "026",
+    "naml": "027",
+    "qasas": "028",
+    "ankabut": "029",
+    "rum": "030",
+    "luqman": "031",
+    "sajda": "032",
+    "ahzab": "033",
+    "saba": "034",
+    "fatir": "035",
+    "yaseen": "036",
+    "saffat": "037",
+    "sad": "038",
+    "zumar": "039",
+    "ghafir": "040",
+    "fussilat": "041",
+    "shura": "042",
+    "zukhruf": "043",
+    "dukhan": "044",
+    "jathiya": "045",
+    "ahqaf": "046",
+    "muhammad": "047",
+    "fath": "048",
+    "hujurat": "049",
+    "qaf": "050",
+    "dhariyat": "051",
+    "tur": "052",
+    "najm": "053",
+    "qamar": "054",
+    "rahman": "055",
+    "waqia": "056",
+    "hadid": "057",
+    "mujadila": "058",
+    "hashr": "059",
+    "mumtahina": "060",
+    "saff": "061",
+    "jumuah": "062",
+    "munafiqun": "063",
+    "taghabun": "064",
+    "talaq": "065",
+    "tahrim": "066",
+    "mulk": "067",
+    "qalam": "068",
+    "haqqa": "069",
+    "maarij": "070",
+    "nuh": "071",
+    "jinn": "072",
+    "muzammil": "073",
+    "mudathir": "074",
+    "qiyama": "075",
+    "insan": "076",
+    "mursalat": "077",
+    "naba": "078",
+    "naziat": "079",
+    "abasa": "080",
+    "takwir": "081",
+    "infitar": "082",
+    "mutaffifin": "083",
+    "inshiqaq": "084",
+    "burooj": "085",
+    "tariq": "086",
+    "ala": "087",
+    "ghashiya": "088",
+    "fajr": "089",
+    "balad": "090",
+    "shams": "091",
+    "layl": "092",
+    "duha": "093",
+    "sharh": "094",
+    "tin": "095",
+    "alaq": "096",
+    "qadr": "097",
+    "bayyina": "098",
+    "zilzal": "099",
+    "adiyat": "100",
+    "qariah": "101",
+    "takathur": "102",
+    "asr": "103",
+    "humazah": "104",
+    "fil": "105",
+    "quraish": "106",
+    "maun": "107",
+    "kawthar": "108",
+    "kafirun": "109",
+    "nasr": "110",
+    "masad": "111",
+    "ikhlas": "112",
+    "falaq": "113",
+    "nas": "114"
+}
+
 SURAH_NAMES = {
     "fatiha": "Al-Fatiha",
     "baqara": "Al-Baqara",
@@ -240,121 +247,378 @@ SURAH_NAMES = {
     "nas": "An-Nas",
 }
 
+# Quran File Paths
+QURAN_LIBRARY = {
+    reciter: {SURAH_TO_NUMBER[key]: f"Quran_surahs/{reciter}/{SURAH_TO_NUMBER[key]}.mp3" for key in SURAH_TO_NUMBER}
+    for reciter in RECITERS.keys()
+}
+
+
+class PaginatedSurahSelect(discord.ui.View):
+    def __init__(self, bot, ctx, reciter, page=0):
+        super().__init__()
+        self.bot = bot
+        self.ctx = ctx
+        self.reciter = reciter
+        self.page = page
+        self.per_page = 25  # Max items per page
+
+        # ✅ Ensure Surahs are actually available for this reciter
+        self.available_surahs = [
+            key for key, num in SURAH_TO_NUMBER.items()
+            if num in QURAN_LIBRARY.get(reciter, {}) and os.path.exists(QURAN_LIBRARY[reciter][num])
+        ]
+
+        # ✅ Prevent division by zero
+        self.total_pages = max((len(self.available_surahs) // self.per_page) + (1 if len(self.available_surahs) % self.per_page > 0 else 0), 1)
+
+        self.add_dropdown()
+        self.add_buttons()
+
+    def add_dropdown(self):
+        """Creates a dropdown menu with only available Surahs."""
+        start_idx = self.page * self.per_page
+        end_idx = start_idx + self.per_page
+
+        options = [
+            discord.SelectOption(label=SURAH_NAMES[key], value=key)
+            for key in self.available_surahs[start_idx:end_idx]
+        ]
+
+        # ✅ Handle case where no Surahs are available
+        if not options:
+            options.append(discord.SelectOption(label="No available Surahs", value="none", description="Try a different reciter", default=True))
+
+        select = discord.ui.Select(
+            placeholder=f"Select a Surah (Page {self.page+1}/{self.total_pages})",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+
+        async def select_callback(interaction: discord.Interaction):
+            surah = select.values[0]
+
+            if surah == "none":
+                await interaction.response.send_message("❌ No available Surahs for this reciter.", ephemeral=True)
+                return
+
+            self.ctx.bot.get_cog("Quran").auto_playing = False
+            await interaction.response.defer()
+            await self.ctx.bot.get_cog("Quran").play_audio(self.ctx, surah, self.reciter, manual_call=True)
+
+        select.callback = select_callback
+        self.add_item(select)
+
+    def add_buttons(self):
+        """Adds navigation buttons for paginated Surah selection."""
+        if self.page > 0:
+            self.add_item(PreviousPageButton(self.bot, self.ctx, self.reciter, self.page))
+        if self.page < self.total_pages - 1:
+            self.add_item(NextPageButton(self.bot, self.ctx, self.reciter, self.page))
+
+
+class PreviousPageButton(discord.ui.Button):
+    def __init__(self, bot, ctx, reciter, page):
+        super().__init__(label="◀ Previous", style=discord.ButtonStyle.secondary)
+        self.bot = bot
+        self.ctx = ctx
+        self.reciter = reciter
+        self.page = page
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(view=PaginatedSurahSelect(self.bot, self.ctx, self.reciter, self.page - 1))
+
+
+class NextPageButton(discord.ui.Button):
+    def __init__(self, bot, ctx, reciter, page):
+        super().__init__(label="Next ▶", style=discord.ButtonStyle.secondary)
+        self.bot = bot
+        self.ctx = ctx
+        self.reciter = reciter
+        self.page = page
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.edit_message(view=PaginatedSurahSelect(self.bot, self.ctx, self.reciter, self.page + 1))
+
+class PlaybackControlView(discord.ui.View):
+    """Persistent playback control buttons with working skip."""
+    def __init__(self, bot, ctx):
+        super().__init__(timeout=None)  # Keep buttons active
+        self.bot = bot
+        self.ctx = ctx
+
+    @discord.ui.button(label="⏸ Pause", style=discord.ButtonStyle.secondary)
+    async def pause_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Pause playback and update 'Now Playing' message instead of sending a private message."""
+        quran_cog = self.bot.get_cog("Quran")
+        voice_client = interaction.guild.voice_client
+
+        if voice_client and voice_client.is_playing():
+            voice_client.pause()
+            
+            # ✅ Convert numeric Surah key ('002') back to text ('baqara')
+            surah_key = next((key for key, num in SURAH_TO_NUMBER.items() if num == quran_cog.current_surah), None)
+
+            if surah_key:
+                now_playing_text = f"```\nNow Playing: {SURAH_NAMES[surah_key]}\nReciter: {RECITERS[quran_cog.current_reciter]}\n⏸️ Paused\n```"
+
+                # ✅ Update "Now Playing" box with pause status
+                if hasattr(quran_cog, "now_playing_message") and quran_cog.now_playing_message:
+                    try:
+                        await quran_cog.now_playing_message.edit(content=now_playing_text)
+                    except discord.NotFound:
+                        pass  # If the message was deleted, ignore error
+
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ No Surah is currently playing.", ephemeral=True)
+
+
+
+    @discord.ui.button(label="▶ Resume", style=discord.ButtonStyle.success)
+    async def resume_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Resume playback and update 'Now Playing' message instead of sending a private message."""
+        quran_cog = self.bot.get_cog("Quran")
+        voice_client = interaction.guild.voice_client
+
+        if voice_client and voice_client.is_paused():
+            voice_client.resume()
+            
+            # ✅ Convert numeric Surah key ('002') back to text ('baqara')
+            surah_key = next((key for key, num in SURAH_TO_NUMBER.items() if num == quran_cog.current_surah), None)
+
+            if surah_key:
+                now_playing_text = f"```\nNow Playing: {SURAH_NAMES[surah_key]}\nReciter: {RECITERS[quran_cog.current_reciter]}\n```"
+
+                # ✅ Update "Now Playing" box to remove "Paused" text
+                if hasattr(quran_cog, "now_playing_message") and quran_cog.now_playing_message:
+                    try:
+                        await quran_cog.now_playing_message.edit(content=now_playing_text)
+                    except discord.NotFound:
+                        pass  # If the message was deleted, ignore error
+
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("❌ No Surah is currently paused.", ephemeral=True)
+
+
+    @discord.ui.button(label="⏭ Skip", style=discord.ButtonStyle.primary)
+    async def skip_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Skips to the next available Surah without crashing if one is missing."""
+        quran_cog = self.bot.get_cog("Quran")
+        voice_client = interaction.guild.voice_client
+
+        if quran_cog.auto_playing:
+            quran_cog.auto_playing = False  # Prevent extra skipping
+
+        if voice_client and voice_client.is_playing():
+            voice_client.stop()
+
+        next_surah = quran_cog.get_next_surah()
+
+        if next_surah:
+            await interaction.response.defer()  # ✅ Prevents unnecessary reply
+            await quran_cog.play_audio(interaction, next_surah, quran_cog.current_reciter, manual_call=False)
+        else:
+            await interaction.response.send_message("❌ No more Surahs available for this reciter.", ephemeral=True)  # ✅ Handle missing Surahs gracefully
+
+
+class ReciterSelect(discord.ui.View):
+    def __init__(self, bot, ctx):
+        super().__init__()
+        self.bot = bot
+        self.ctx = ctx
+
+        select = discord.ui.Select(
+            placeholder="Select a Reciter",
+            min_values=1,
+            max_values=1,
+            options=self.get_reciter_options()
+        )
+
+        async def select_callback(interaction: discord.Interaction):
+            reciter = select.values[0]
+            await interaction.response.edit_message(
+                content=f"✅ **Reciter: {RECITERS[reciter]}**\nSelect a Surah:",
+                view=PaginatedSurahSelect(self.bot, self.ctx, reciter)
+            )
+
+        select.callback = select_callback
+        self.add_item(select)
+
+    def get_reciter_options(self):
+        """Generates reciter options, marking those missing some Surahs."""
+        options = []
+        for reciter in RECITERS.keys():
+            # Check if the reciter is missing any Surahs
+            if self.is_incomplete_reciter(reciter):
+                label = f"{RECITERS[reciter]} (Missing Some Surahs)"
+            else:
+                label = RECITERS[reciter]
+            
+            options.append(discord.SelectOption(label=label, value=reciter))
+
+        return options
+
+
+    def is_incomplete_reciter(self, reciter):
+        """Checks if a reciter is missing any Surah files."""
+        available_surahs = sum(
+            1 for surah_num, file_path in QURAN_LIBRARY.get(reciter, {}).items()
+            if os.path.exists(file_path)  # ✅ Only count if the file actually exists
+        )
+
+        total_surahs = len(SURAH_TO_NUMBER)  # 114 total Surahs
+
+        #print(f"Reciter: {reciter}, Available: {available_surahs}, Total: {total_surahs}")  # Debugging print
+
+        return available_surahs != total_surahs  # ✅ Return True if any Surah is missing
+
+
+
 
 class Quran(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.current_surah = None
+        self.current_reciter = DEFAULT_RECITER
+        self.auto_playing = False
+        self.playback_control_message = None  # Initialize control message tracking
+        self.now_playing_message = None       # Initialize now playing message tracking
 
-    async def play_audio(self, ctx, surah_name, manual_call=True):
-        """Stops current playback (if any) and plays the requested Surah, then auto-plays the next one."""
-        file_path = QURAN_LIBRARY.get(surah_name)
 
-        if not file_path or not os.path.exists(file_path):
-            if manual_call:  # Only send a message if it was a manual request
-                await ctx.send(f"Audio file not found for {SURAH_NAMES.get(surah_name, surah_name)}.")
+    async def join_voice_channel(self, ctx):
+        """Joins the user's voice channel if not already connected."""
+        if ctx.author.voice is None:
+            await ctx.send("❌ You need to be in a voice channel.")
+            return False
+        if ctx.voice_client is None:
+            await ctx.author.voice.channel.connect()
+        return True
+
+    async def play_audio(self, ctx_or_interaction, surah, reciter, manual_call=True):
+        """Plays the requested Surah and ensures auto-play works like before."""
+        ctx = ctx_or_interaction if isinstance(ctx_or_interaction, commands.Context) else None
+        interaction = ctx_or_interaction if isinstance(ctx_or_interaction, discord.Interaction) else None
+
+        voice_client = ctx.voice_client if ctx else (interaction.guild.voice_client if interaction else None)
+
+        if not voice_client:
+            joined = await self.join_voice_channel(ctx_or_interaction)
+            if not joined:
+                return
+            voice_client = ctx.voice_client if ctx else (interaction.guild.voice_client if interaction else None)
+
+        surah_number = SURAH_TO_NUMBER.get(surah)
+        if not surah_number:
             return
 
-        # Stop current playback before updating self.current_surah
-        if ctx.voice_client and ctx.voice_client.is_playing():
-            self.manual_override = True  # Indicate that playback was manually changed
-            ctx.voice_client.stop()
+        file_path = QURAN_LIBRARY.get(reciter, {}).get(surah_number)
 
-        # Set current_surah **before** playing to prevent mismatched messages
-        self.current_surah = surah_name  
+        # ✅ Check if the Surah exists before playing
+        if not file_path or not os.path.exists(file_path):
+            error_message = f"❌ Surah {SURAH_NAMES.get(surah, surah)} is not available for {RECITERS[reciter]}."
+            if ctx:
+                await ctx.send(error_message)
+            elif interaction:
+                await interaction.response.send_message(error_message, ephemeral=True)
+            return  # ✅ Prevents freezing
 
-        # Send "Now playing" message only if it's a manual call
+        if voice_client.is_playing():
+            voice_client.stop()
+            await asyncio.sleep(1)
+
         if manual_call:
-            await ctx.send(f"Now playing: {SURAH_NAMES[surah_name]}")
+            self.auto_playing = True  # ✅ Ensure auto-play is enabled if started manually
 
-        def after_playback(error):
-            if not self.manual_override:  # Only auto-play next if not manually overridden
-                self.bot.loop.create_task(self.auto_next(ctx))
+        self.current_surah = surah_number
+        self.current_reciter = reciter
+
+        surah_key = next((key for key, num in SURAH_TO_NUMBER.items() if num == self.current_surah), None)
+        now_playing_text = f"```\nNow Playing: {SURAH_NAMES[surah_key]}\nReciter: {RECITERS[reciter]}\n```" if surah_key else "Now Playing: Unknown"
+
+        view = PlaybackControlView(self.bot, ctx_or_interaction)
+
+        try:
+            if manual_call:
+                if self.playback_control_message:
+                    await self.playback_control_message.delete()
+                if self.now_playing_message:
+                    await self.now_playing_message.delete()
+
+                if ctx:
+                    self.playback_control_message = await ctx.send("**Playback Controls:**", view=view)
+                    self.now_playing_message = await ctx.send(now_playing_text)
+                elif interaction:
+                    await interaction.response.defer()
+                    self.playback_control_message = await interaction.followup.send("**Playback Controls:**", view=view)
+                    self.now_playing_message = await interaction.followup.send(now_playing_text)
             else:
-                self.manual_override = False  # Reset flag after manual playback switch
+                if self.now_playing_message:
+                    await self.now_playing_message.edit(content=now_playing_text)
+        except discord.NotFound:
+            pass  
 
-        ctx.voice_client.play(
-            discord.FFmpegPCMAudio(file_path),
-            after=after_playback
-        )
+        # ✅ Improved `after_playback()` function
+        def after_playback(error):
+            if error:
+                print(f"Playback error: {error}")
+            if self.auto_playing:  # ✅ Ensure auto-play continues
+                self.bot.loop.create_task(self.auto_next(ctx_or_interaction))
+
+        voice_client.play(discord.FFmpegPCMAudio(file_path), after=after_playback)
+
+
+    def get_next_surah(self):
+        """Finds the next available Surah for the current reciter, looping back to the beginning."""
+        if not self.current_surah:
+            return None
+
+        # ✅ Get a sorted list of available Surahs for this reciter
+        available_surahs = sorted([
+            key for key, num in SURAH_TO_NUMBER.items()
+            if num in QURAN_LIBRARY.get(self.current_reciter, {}) and os.path.exists(QURAN_LIBRARY[self.current_reciter][num])
+        ], key=lambda surah: int(SURAH_TO_NUMBER[surah]))  # Sort by Surah number
+
+        if not available_surahs:
+            return None  # No available Surahs for this reciter
+
+        # ✅ Find the index of the current Surah
+        current_surah_name = next((key for key, num in SURAH_TO_NUMBER.items() if num == self.current_surah), None)
+
+        if current_surah_name not in available_surahs:
+            return None  # If current Surah isn't in available Surahs, return None
+
+        current_index = available_surahs.index(current_surah_name)
+
+        # ✅ Loop back to the first Surah if we're at the last one
+        if current_index + 1 < len(available_surahs):
+            return available_surahs[current_index + 1]
+        else:
+            return available_surahs[0]  # Restart from the first Surah
+
+
 
     async def auto_next(self, ctx):
-        """Automatically plays the next Surah when the current one ends, without sending a message."""
-        next_surah = self.get_next_surah(self.current_surah)
+        """Automatically plays the next available Surah when the current one finishes."""
+        if not self.auto_playing:
+            return
+
+        next_surah = self.get_next_surah()
+
         if next_surah:
-            await self.play_audio(ctx, next_surah, manual_call=False)  # Auto transition, no message
-
-    def get_next_surah(self, current_surah):
-        """Finds the next Surah in the order from SURAH_NAMES, looping back at the end."""
-        surah_list = list(SURAH_NAMES.keys())  # Get a list of Surahs in order
-        if current_surah in surah_list:
-            index = surah_list.index(current_surah)
-            next_index = (index + 1) % len(surah_list)  # Loops back to 0 when reaching the end
-            return surah_list[next_index]
-        return None
-
-    @commands.command()
-    async def surah(self, ctx, surah_name: str):
-        """Plays the specified Surah and stops any currently playing one."""
-        surah_name = surah_name.lower()
-
-        if surah_name not in QURAN_LIBRARY:
-            await ctx.send(f"'{surah_name}' is not available in the library.")
-            return
-
-        voice_client = ctx.voice_client
-        if not voice_client:
-            await ctx.send("I am not in a voice channel. Use `!join` first.")
-            return
-
-        await self.play_audio(ctx, surah_name, manual_call=True)  # Manual play, sends message
-
-    @commands.command()
-    async def currentsurah(self, ctx):
-        """Displays the currently playing Surah."""
-        if self.current_surah:
-            await ctx.send(f"Currently playing: {SURAH_NAMES[self.current_surah]}")
+            await self.play_audio(ctx, next_surah, self.current_reciter, manual_call=False)
         else:
-            await ctx.send("No Surah is currently playing.")
+            self.auto_playing = False  # ✅ Stop auto-play if no more Surahs exist
+            if ctx:
+                await ctx.send("✅ Auto-play stopped: No more Surahs available for this reciter.")
 
     @commands.command()
-    async def pause(self, ctx):
-        """Pauses the currently playing Surah."""
-        if ctx.voice_client and ctx.voice_client.is_playing():
-            ctx.voice_client.pause()
-            await ctx.send("Playback paused.")
-        else:
-            await ctx.send("No Surah is currently playing.")
-
-    @commands.command()
-    async def resume(self, ctx):
-        """Resumes the paused Surah."""
-        if ctx.voice_client and ctx.voice_client.is_paused():
-            ctx.voice_client.resume()
-            await ctx.send("Playback resumed.")
-        else:
-            await ctx.send("No Surah is currently paused.")
-
-    @commands.command()
-    async def next(self, ctx):
-        """Skips the current Surah and plays the next one in order."""
-        if ctx.voice_client and ctx.voice_client.is_playing():
-            self.manual_override = True  # Prevent auto_next() from interfering
-            ctx.voice_client.stop()
-            next_surah = self.get_next_surah(self.current_surah)
-            if next_surah:
-                await ctx.send("Surah skipped.")
-                await self.play_audio(ctx, next_surah, manual_call=True)  # Make skip behave like !surah
-            else:
-                await ctx.send("No next Surah found.")  # Should never happen due to looping
-        else:
-            await ctx.send("No Surah is currently playing.")
-
-    @commands.command()
-    async def surahs(self, ctx):
-        """Lists all available Surahs."""
-        surah_list = "\n".join(f"- {value}" for value in SURAH_NAMES.values())
-        await ctx.send(f"Available Surahs:\n```{surah_list}```")
+    async def surah(self, ctx):
+        """Displays a menu to select a Surah and Reciter."""
+        await ctx.send("(To select new reciter recall '!surah'.)")
+        await ctx.send("**Select a Reciter:**", view=ReciterSelect(self.bot, ctx))
 
 
 async def setup(bot):

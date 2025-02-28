@@ -63,7 +63,7 @@ async def main():
     async with bot:
         load_dotenv()  # Load environment variables
         await load_cogs()  # Load cogs BEFORE starting the bot
-        DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+        DISCORD_BOT_TOKEN = os.getenv("TEST_BOT_TOKEN")
         await bot.start(DISCORD_BOT_TOKEN)
 
 import asyncio
