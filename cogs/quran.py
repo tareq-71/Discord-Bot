@@ -475,9 +475,6 @@ class ReciterSelect(discord.ui.View):
 
         return available_surahs != total_surahs  # ✅ Return True if any Surah is missing
 
-
-
-
 class Quran(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

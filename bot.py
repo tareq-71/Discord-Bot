@@ -18,7 +18,7 @@ bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 async def on_ready():
     logger.info(f'Logged in as {bot.user}')
     await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.competing, name="Brawl Stars"))
+        activity=discord.Activity(type=discord.ActivityType.listening, name="Quran"))
     logger.info(f'{bot.user} is now running!')
 
 # ✅ Log every command usage
@@ -41,9 +41,13 @@ async def on_member_remove(member):
 @bot.event
 async def on_voice_state_update(member, before, after):
     if before.channel is None and after.channel is not None:
+        if after.channel.name == "Secret":
+            return  # Do nothing if the channel is "Secret"
+        
         channel = discord.utils.get(member.guild.text_channels, name="siu")
         if channel:
             await channel.send(f"{member.display_name} has joined {after.channel.name}.")
+
 
 async def load_cogs():
     for filename in os.listdir('./cogs'):
