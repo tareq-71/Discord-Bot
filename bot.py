@@ -41,10 +41,9 @@ async def on_member_remove(member):
 @bot.event
 async def on_voice_state_update(member, before, after):
     if before.channel is None and after.channel is not None:
-        channel = discord.utils.get(member.guild.text_channels, name="bot-testing")
+        channel = discord.utils.get(member.guild.text_channels, name="siu")
         if channel:
-            await channel.send(f"{member} has joing the voice channels.")
-
+            await channel.send(f"{member.display_name} has joined {after.channel.name}.")
 
 async def load_cogs():
     for filename in os.listdir('./cogs'):
